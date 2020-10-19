@@ -19,10 +19,12 @@ background = pygame.image.load('Road.png')
 Gameplay = True  # Constant always true until we need to close/quit/exit the game
 
 while Gameplay:  # Initializes the main loop of the game
-    screen.fill(Gray)  # Fills the background with gray
+    # Fills the background with gray
+    screen.fill(Gray)
     # Background Image
     screen.blit(background, (0, 0))
-    pygame.display.update()  # Update the color and background of the screen
+    # Update the color and background of the screen
+    pygame.display.update()
     for event in pygame.event.get():  # Events are the inputs of the player
         if event.type == pygame.QUIT:
             Gameplay = False
