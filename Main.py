@@ -8,17 +8,20 @@ White = (255, 255, 255)
 
 class Car(pygame.sprite.Sprite):
     def __init__(self):
+        # Call the Sprite Object in the def
         super(Car, self).__init__()
-        self.image = pygame.image.load("Car.png")
+        # Load the image from the file
+        self.image = pygame.image.load("Car.png").convert()
+        # Create the main rectangular of the Car
         self.rect = self.image.get_rect()
+        # First position of the Car
         self.rect.center = (50, 80)
 
 
 # Initialize the game
 pygame.init()
-
-Width, Height = 600, 400
 # Dimensions of the screen
+Width, Height = 600, 400
 screen = pygame.display.set_mode((Width, Height))
 # Title of the screen
 pygame.display.set_caption("Racing Numbers")
