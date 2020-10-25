@@ -9,9 +9,9 @@ White = (255, 255, 255)
 class Car(pygame.sprite.Sprite):
     def __init__(self):
         super(Car, self).__init__()
-        self.image = pygame.image.load("Car.png").convert()
+        self.image = pygame.image.load("Car.png")
         self.rect = self.image.get_rect()
-        self.rect.center = (20, 100)
+        self.rect.center = (50, 80)
 
 
 # Initialize the game
@@ -40,10 +40,10 @@ while Gameplay:  # Initializes the main loop of the game
     screen.fill(Gray)
     # Background Image
     screen.blit(background, (0, 0))
-    # Update the color and background of the screen
+    # Insert the Car Object into the screen
     car_list.draw(screen)
+    # Update the color and background of the screen
     pygame.display.update()
-    pygame.display.flip()
     for event in pygame.event.get():  # Events are the inputs of the player
         if event.type == pygame.QUIT:
             Gameplay = False
