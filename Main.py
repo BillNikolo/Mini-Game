@@ -11,7 +11,7 @@ class Car(pygame.sprite.Sprite):
         # Call the Sprite Object in the def
         super(Car, self).__init__()
         # Load the image from the file
-        self.image = pygame.image.load("Car.png").convert()
+        self.image = pygame.image.load("Car.png")
         # Create the main rectangular of the Car
         self.rect = self.image.get_rect()
         # First position of the Car
