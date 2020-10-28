@@ -5,7 +5,6 @@ import pygame_assets as assets
 Gray = (128, 128, 128)
 White = (255, 255, 255)
 
-
 class Car(pygame.sprite.Sprite):
     def __init__(self):
         # Call the Sprite Object in the def
@@ -16,6 +15,17 @@ class Car(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         # First position of the Car
         self.rect.center = (50, 80)
+
+class StopSign(pygame.sprite.Sprite):
+    def __init__(self):
+        # Call the Sprite Object in the def
+        super(StopSign, self).__init__()
+        # Load the image from the file
+        self.image = pygame.image.load("StopSign.png")
+        # Create the main rectangular of the Stop Sign
+        self.rect = self.image.get_rect()
+        # First position of the Stop Sign
+        self.rect.center = (500, 80)
 
 
 # Initialize the game
@@ -35,8 +45,9 @@ Gameplay = True
 clock = pygame.time.Clock()
 FPS = 60
 Car = Car()
+StopSign = StopSign()
 car_list = pygame.sprite.Group()
-car_list.add(Car)
+car_list.add(Car, StopSign)
 while Gameplay:  # Initializes the main loop of the game
     clock.tick(FPS)
     # Fills the background with gray
