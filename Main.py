@@ -16,6 +16,7 @@ class Car(pygame.sprite.Sprite):
         # First position of the Car
         self.rect.center = (50, 80)
 
+
 class StopSign(pygame.sprite.Sprite):
     def __init__(self):
         # Call the Sprite Object in the def
