@@ -5,6 +5,33 @@ import pygame_assets as assets
 Gray = (128, 128, 128)
 White = (255, 255, 255)
 
+
+class Background():
+    def __init__(self):
+        self.background = pygame.image.load('Road.png')
+        self.BackgroundRect = self.background.get_rect()
+
+        self.backgroundY1 = 0
+        self.backgroundX1 = 0
+
+        self.backgroundY2 = 0
+        self.backgroundX2 = self.BackgroundRect.width
+
+        self.backgroundSpeed = 4
+
+    def updateBackground(self):
+        self.backgroundX1 -= self.backgroundSpeed
+        self.backgroundX2 -= self.backgroundSpeed
+        if self.backgroundX1 <= -self.BackgroundRect.width:
+            self.backgroundX1 = self.BackgroundRect.width
+        if self.backgroundX2 <= -self.BackgroundRect.width:
+            self.backgroundX2 = self.BackgroundRect.width
+
+    def renderBackground(self):
+        screen.blit(self.background, (self.backgroundX1, self.backgroundY1))
+        screen.blit(self.background, (self.backgroundX2, self.backgroundY2))
+
+
 class Car(pygame.sprite.Sprite):
     def __init__(self):
         # Call the Sprite Object in the def
@@ -34,27 +61,36 @@ pygame.init()
 # Dimensions of the screen
 Width, Height = 600, 400
 screen = pygame.display.set_mode((Width, Height))
+# Fill screen with white
+screen.fill(White)
 # Title of the screen
 pygame.display.set_caption("Racing Numbers")
 
 # Background
-background = pygame.image.load('Road.png')
+#background = pygame.image.load('Road.png')
 
 
 # Constant always true until we need to close/quit/exit the game
 Gameplay = True
+
+# Create a clock for the game
 clock = pygame.time.Clock()
 FPS = 60
-Car = Car()
-StopSign = StopSign()
+
+# Setting up Sprites
+car = Car()
+stopsign = StopSign()
+background = Background()
 car_list = pygame.sprite.Group()
-car_list.add(Car, StopSign)
+car_list.add(car, stopsign)
+
+
 while Gameplay:  # Initializes the main loop of the game
-    clock.tick(FPS)
+    #clock.tick(FPS)
     # Fills the background with gray
-    screen.fill(Gray)
+    #screen.fill(Gray)
     # Background Image
-    screen.blit(background, (0, 0))
+    #screen.blit(background, (0, 0))
     # Insert the Car Object into the screen
     car_list.draw(screen)
     # Update the color and background of the screen
@@ -62,3 +98,9 @@ while Gameplay:  # Initializes the main loop of the game
     for event in pygame.event.get():  # Events are the inputs of the player
         if event.type == pygame.QUIT:
             Gameplay = False
+
+    background.updateBackground()
+    background.renderBackground()
+    # Update the color and background of the screen
+    pygame.display.update()
+    clock.tick(FPS)
