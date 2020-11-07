@@ -1,4 +1,6 @@
 import pygame
+import os
+import bpy
 import pygame_assets as assets
 
 # Colors
@@ -6,7 +8,7 @@ Gray = (128, 128, 128)
 White = (255, 255, 255)
 
 
-class Background():
+class Background:
     def __init__(self):
         # Create a rectangle of Road picture(600x400)
         self.background = pygame.image.load('Road.png')
@@ -20,7 +22,7 @@ class Background():
         self.backgroundY2 = 0
         self.backgroundX2 = self.BackgroundRect.width
 
-        #Speed that the background moves
+        # Speed that the background moves
         self.backgroundSpeed = 4
 
     def updateBackground(self):
@@ -47,7 +49,7 @@ class Car(pygame.sprite.Sprite):
         # Create the main rectangular of the Car
         self.rect = self.image.get_rect()
         # First position of the Car
-        self.rect.center = (50, 80)
+        self.rect.center = (50, 85)
 
 
 class StopSign(pygame.sprite.Sprite):
@@ -59,22 +61,19 @@ class StopSign(pygame.sprite.Sprite):
         # Create the main rectangular of the Stop Sign
         self.rect = self.image.get_rect()
         # First position of the Stop Sign
-        self.rect.center = (500, 80)
-
-
-NumTarget_list = pygame.sprite.Group()
+        self.rect.center = (500, 85)
 
 
 class NumTarget(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, png):
         # Call the Sprite Object in the def
-        super(NumTarget, self).__init__()
+        super(NumTarget, self ).__init__()
         # Load the image from the file
-        self.image = pygame.image.load("1.png")
+        self.image = pygame.image.load(png)
         # Create the main rectangular of the Stop Sign
         self.rect = self.image.get_rect()
         # First position of the Stop Sign
-        self.rect.center = (500, 310)
+        # self.rect.center = (500, 320)
 
 
 # Initialize the game
@@ -87,9 +86,6 @@ screen.fill(White)
 # Title of the screen
 pygame.display.set_caption("Racing Numbers")
 
-# Background
-# background = pygame.image.load('Road.png')
-
 
 # Constant always true until we need to close/quit/exit the game
 Gameplay = True
@@ -99,34 +95,32 @@ clock = pygame.time.Clock()
 FPS = 60
 
 # Setting up Sprites
-car = Car()
-stopsign = StopSign()
-background = Background()
-numtarget = NumTarget()
+target_list = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png",
+               "8.png", "9.png"]
 NumTarget_list = pygame.sprite.Group()
+for i in range(len(target_list)):
+    num_target = NumTarget(target_list[i])
+    NumTarget_list.add(num_target)
+
+car = Car()
+stop_sign = StopSign()
+background = Background()
 car_list = pygame.sprite.Group()
-NumTarget_list.add(numtarget)
-car_list.add(car, stopsign)
+car_list.add(car, stop_sign)
 
 
 while Gameplay:  # Initializes the main loop of the game
-    # clock.tick(FPS)
-    # Fills the background with gray
-    # screen.fill(Gray)
-    # Background Image
-    # screen.blit(background, (0, 0))
-    # Insert the Car Object into the screen
-    NumTarget_list.draw(screen)
-    car_list.draw(screen)
-    # Update the color and background of the screen
-    pygame.display.update()
+    clock.tick(FPS)
+
     for event in pygame.event.get():  # Events are the inputs of the player
         if event.type == pygame.QUIT:
             Gameplay = False
 
-    # Upadte the backgroun of the screen
+    # Update the background of the screen
     background.updateBackground()
     background.renderBackground()
+    # Insert the Car Object into the screen
+    NumTarget_list.draw(screen)
+    car_list.draw(screen)
     # Update the whole screen
     pygame.display.update()
-    clock.tick(FPS)
