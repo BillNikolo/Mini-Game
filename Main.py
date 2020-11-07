@@ -23,12 +23,12 @@ class Background:
         self.backgroundX2 = self.BackgroundRect.width
 
         # Speed that the background moves
-        self.backgroundSpeed = 4
+        self.backgroundSpeed = 80
 
-    def updateBackground(self):
+    def updateBackground(self, time):
         # Update the coordination of the st/end point
-        self.backgroundX1 -= self.backgroundSpeed
-        self.backgroundX2 -= self.backgroundSpeed
+        self.backgroundX1 -= self.backgroundSpeed/time
+        self.backgroundX2 -= self.backgroundSpeed/time
         if self.backgroundX1 <= -self.BackgroundRect.width:
             self.backgroundX1 = self.BackgroundRect.width
         if self.backgroundX2 <= -self.BackgroundRect.width:
@@ -108,16 +108,19 @@ background = Background()
 car_list = pygame.sprite.Group()
 car_list.add(car, stop_sign)
 
-
-while Gameplay:  # Initializes the main loop of the game
+# Initializes the main loop of the game
+while Gameplay:
+    # The time running
     clock.tick(FPS)
+    # dt of the las two loops in milliseconds
+    dt = clock.get_time()
 
     for event in pygame.event.get():  # Events are the inputs of the player
         if event.type == pygame.QUIT:
             Gameplay = False
 
     # Update the background of the screen
-    background.updateBackground()
+    background.updateBackground(dt)
     background.renderBackground()
     # Insert the Car Object into the screen
     NumTarget_list.draw(screen)
