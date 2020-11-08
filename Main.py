@@ -1,4 +1,6 @@
-import pygame
+import pygame, sys
+from pygame.locals import *
+import random, time
 import os
 import bpy
 import pygame_assets as assets
@@ -6,6 +8,8 @@ import pygame_assets as assets
 # Colors
 Gray = (128, 128, 128)
 White = (255, 255, 255)
+
+SPEED = 5
 
 
 class Background:
@@ -23,7 +27,7 @@ class Background:
         self.backgroundX2 = self.BackgroundRect.width
 
         # Speed that the background moves
-        self.backgroundSpeed = 80
+        self.backgroundSpeed = 4
 
     def updateBackground(self, time):
         # Update the coordination of the st/end point
@@ -50,6 +54,15 @@ class Car(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         # First position of the Car
         self.rect.center = (50, 85)
+
+    def drive(self):
+        pressed_keys = pygame.key.get_pressed()
+        if self.rect.top > 30:
+            if pressed_keys[K_UP]:
+                self.rect.move_ip(0, -5)
+        if self.rect.bottom < 370:
+            if pressed_keys[K_DOWN]:
+                self.rect.move_ip(0, 5)
 
 
 class StopSign(pygame.sprite.Sprite):
@@ -105,17 +118,25 @@ for i in range(len(target_list)):
 car = Car()
 stop_sign = StopSign()
 background = Background()
-car_list = pygame.sprite.Group()
-car_list.add(car, stop_sign)
+CAR = pygame.sprite.Group()
+CAR.add(car)#, stop_sign)
+
+#Adding a new User event
+NEW_EVENT = pygame.USEREVENT + 1
+pygame.time.set_timer(NEW_EVENT, 1000)
 
 # Initializes the main loop of the game
 while Gameplay:
     # The time running
     clock.tick(FPS)
-    # dt of the las two loops in milliseconds
-    dt = clock.get_time()
+    # dt of the last two loops in milliseconds
+    dt = clock.get_time()/20
 
-    for event in pygame.event.get():  # Events are the inputs of the player
+    for event in pygame.event.get():
+        # Events are the inputs of the player
+        for event in pygame.event.get():
+            if event.type == NEW_EVENT:
+                SPEED += 0.5
         if event.type == pygame.QUIT:
             Gameplay = False
 
@@ -124,6 +145,8 @@ while Gameplay:
     background.renderBackground()
     # Insert the Car Object into the screen
     NumTarget_list.draw(screen)
-    car_list.draw(screen)
+    CAR.draw(screen)
+    for entity in CAR:
+        entity.drive()
     # Update the whole screen
     pygame.display.update()
