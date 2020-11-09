@@ -2,14 +2,14 @@ import pygame, sys
 from pygame.locals import *
 import random, time
 import os
-import bpy
 import pygame_assets as assets
 
 # Colors
 Gray = (128, 128, 128)
 White = (255, 255, 255)
 
-SPEED = 5
+BACKGROUND_SPEED = 150
+CAR_VERT_SPEED = 150
 
 
 class Background:
@@ -26,13 +26,10 @@ class Background:
         self.backgroundY2 = 0
         self.backgroundX2 = self.BackgroundRect.width
 
-        # Speed that the background moves
-        self.backgroundSpeed = 4
-
-    def updateBackground(self, time):
+    def updateBackground(self, dt):
         # Update the coordination of the st/end point
-        self.backgroundX1 -= self.backgroundSpeed/time
-        self.backgroundX2 -= self.backgroundSpeed/time
+        self.backgroundX1 -= BACKGROUND_SPEED*dt
+        self.backgroundX2 -= BACKGROUND_SPEED*dt
         if self.backgroundX1 <= -self.BackgroundRect.width:
             self.backgroundX1 = self.BackgroundRect.width
         if self.backgroundX2 <= -self.BackgroundRect.width:
@@ -55,18 +52,18 @@ class Car(pygame.sprite.Sprite):
         # First position of the Car
         self.rect.center = (50, 85)
 
-    def drive(self):
+    def update(self, dt):
         pressed_keys = pygame.key.get_pressed()
         if self.rect.top > 30:
             if pressed_keys[K_UP]:
-                self.rect.move_ip(0, -5)
+                self.rect.move_ip(0, -CAR_VERT_SPEED*dt)
         if self.rect.bottom < 370:
             if pressed_keys[K_DOWN]:
-                self.rect.move_ip(0, 5)
+                self.rect.move_ip(0, CAR_VERT_SPEED*dt)
 
 
 class StopSign(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         # Call the Sprite Object in the def
         super(StopSign, self).__init__()
         # Load the image from the file
@@ -74,11 +71,14 @@ class StopSign(pygame.sprite.Sprite):
         # Create the main rectangular of the Stop Sign
         self.rect = self.image.get_rect()
         # First position of the Stop Sign
-        self.rect.center = (500, 85)
+        self.rect.center = (x, y)
+        
+    def update(self, dt):
+        self.rect.move_ip(-BACKGROUND_SPEED*dt, 0)
 
 
 class NumTarget(pygame.sprite.Sprite):
-    def __init__(self, png):
+    def __init__(self, png, x, y):
         # Call the Sprite Object in the def
         super(NumTarget, self ).__init__()
         # Load the image from the file
@@ -86,8 +86,14 @@ class NumTarget(pygame.sprite.Sprite):
         # Create the main rectangular of the Stop Sign
         self.rect = self.image.get_rect()
         # First position of the Stop Sign
-        # self.rect.center = (500, 320)
+        self.rect.center = (x, y)
+        
+    def update(self, dt):
+        self.rect.move_ip(-BACKGROUND_SPEED*dt, 0)
 
+        if self.rect.x < 0:
+            self.rect.move_ip(600 + random.random()*300, random.random() * 200)
+            
 
 # Initialize the game
 pygame.init()
@@ -108,18 +114,25 @@ clock = pygame.time.Clock()
 FPS = 60
 
 # Setting up Sprites
-target_list = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png",
-               "8.png", "9.png"]
-NumTarget_list = pygame.sprite.Group()
-for i in range(len(target_list)):
-    num_target = NumTarget(target_list[i])
-    NumTarget_list.add(num_target)
+target_filenames = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png",
+                    "8.png", "9.png"]
+random.shuffle(target_filenames)
+target_group = pygame.sprite.Group()
+x = 700
+for filename in target_filenames:
+    y = int(random.random() * 3) * (Height / 3)
+    target = NumTarget(filename, x, y)
+    x += 300 + random.random() * 600
+    target_group.add(target)
 
 car = Car()
-stop_sign = StopSign()
+stop_sign = StopSign(500, 85)
 background = Background()
-CAR = pygame.sprite.Group()
-CAR.add(car)#, stop_sign)
+
+sprites = pygame.sprite.Group()
+sprites.add(car)#, stop_sign)
+sprites.add(stop_sign)
+sprites.add(target_group)
 
 #Adding a new User event
 NEW_EVENT = pygame.USEREVENT + 1
@@ -128,25 +141,21 @@ pygame.time.set_timer(NEW_EVENT, 1000)
 # Initializes the main loop of the game
 while Gameplay:
     # The time running
-    clock.tick(FPS)
-    # dt of the last two loops in milliseconds
-    dt = clock.get_time()/20
+    dt = clock.tick(FPS)/1000
 
     for event in pygame.event.get():
         # Events are the inputs of the player
-        for event in pygame.event.get():
-            if event.type == NEW_EVENT:
-                SPEED += 0.5
+
+        if event.type == NEW_EVENT:
+            pass#SPEED += 0.5
         if event.type == pygame.QUIT:
             Gameplay = False
 
     # Update the background of the screen
     background.updateBackground(dt)
     background.renderBackground()
-    # Insert the Car Object into the screen
-    NumTarget_list.draw(screen)
-    CAR.draw(screen)
-    for entity in CAR:
-        entity.drive()
+    # Draw sprites
+    sprites.update(dt)
+    sprites.draw(screen)
     # Update the whole screen
     pygame.display.update()
