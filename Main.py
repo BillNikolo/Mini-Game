@@ -147,7 +147,7 @@ for filename in target_filenames:
 stop_sign_group = pygame.sprite.Group()
 x = 700
 for i in range(5):
-    stop_sign = stopSign(x,random.choice([LINE1, LINE2, LINE3]))
+    stop_sign = StopSign(x,random.choice([LINE1, LINE2, LINE3]))
     x += 600
     stop_sign_group.add(stop_sign)
 
