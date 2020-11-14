@@ -1,19 +1,20 @@
-import pygame, sys
+import pygame
 from pygame.locals import *
-import random, time
-import os
-import pygame_assets as assets
+import random
+# import os
+# import pygame_assets as assets
 
-# Colors
-Gray = (128, 128, 128)
-White = (255, 255, 255)
-
-#line_list = [(700,85),(700,180),(700,230)]
-LINE1 = (700,85)
-LINE2 = (700,180)
-LINE3 = (700,235)
+# Constants
+GRAY = (128, 128, 128)
+WHITE = (255, 255, 255)
+LINE1 = 85
+LINE2 = 205
+LINE3 = 315
 BACKGROUND_SPEED = 150
 CAR_VERT_SPEED = 180
+CAR_HORIZ_SPEED = 200
+# Dimensions of the screen
+WIDTH, HEIGHT = 600, 400
 
 
 class Background:
@@ -30,7 +31,7 @@ class Background:
         self.backgroundY2 = 0
         self.backgroundX2 = self.BackgroundRect.width
 
-    def updateBackground(self, dt):
+    def update_background(self, dt):
         # Update the coordination of the st/end point
         self.backgroundX1 -= int(BACKGROUND_SPEED*dt)
         self.backgroundX2 -= int(BACKGROUND_SPEED*dt)
@@ -39,7 +40,7 @@ class Background:
         if self.backgroundX2 <= -self.BackgroundRect.width:
             self.backgroundX2 = self.BackgroundRect.width
 
-    def renderBackground(self):
+    def render_background(self):
         # Draw the picture two times
         screen.blit(self.background, (self.backgroundX1, self.backgroundY1))
         screen.blit(self.background, (self.backgroundX2, self.backgroundY2))
@@ -64,7 +65,12 @@ class Car(pygame.sprite.Sprite):
         if self.rect.bottom < 370:
             if pressed_keys[K_DOWN]:
                 self.rect.move_ip(0, int(CAR_VERT_SPEED*dt))
-
+        if self.rect.right < WIDTH:
+            if pressed_keys[K_RIGHT]:
+                self.rect.move_ip(int(CAR_HORIZ_SPEED*dt), 0)
+        if self.rect.left > 10:
+            if pressed_keys[K_LEFT]:
+                self.rect.move_ip(int(-CAR_HORIZ_SPEED*dt), 0)
 
 class StopSign(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -76,18 +82,19 @@ class StopSign(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         # First position of the Stop Sign
         self.rect.center = (x, y)
-        
+
+
     def update(self, dt):
         self.rect.move_ip(int(-BACKGROUND_SPEED*dt), 0)
 
         if self.rect.x < -50:
-            self.rect.move_ip(random.choice([LINE1, LINE2, LINE3]))
+            self.rect.center = (2950, random.choice([LINE1, LINE2, LINE3]))
 
 
 class NumTarget(pygame.sprite.Sprite):
     def __init__(self, png, x, y):
         # Call the Sprite Object in the def
-        super(NumTarget, self ).__init__()
+        super(NumTarget, self).__init__()
         # Load the image from the file
         self.image = pygame.image.load(png)
         # Create the main rectangular of the Stop Sign
@@ -99,16 +106,14 @@ class NumTarget(pygame.sprite.Sprite):
         self.rect.move_ip(int(-BACKGROUND_SPEED*dt), 0)
 
         if self.rect.x < -50:
-            self.rect.move_ip(int(600 + random.random()*300), int(random.random() * 200))
+            self.rect.center = (2950, random.choice([LINE1, LINE2, LINE3]))
             
 
 # Initialize the game
 pygame.init()
-# Dimensions of the screen
-Width, Height = 600, 400
-screen = pygame.display.set_mode((Width, Height))
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 # Fill screen with white
-screen.fill(White)
+screen.fill(WHITE)
 # Title of the screen
 pygame.display.set_caption("Racing Numbers")
 
@@ -121,28 +126,41 @@ clock = pygame.time.Clock()
 FPS = 60
 
 # Setting up Sprites
+# Target Sprite
 target_filenames = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png",
                     "8.png", "9.png"]
 random.shuffle(target_filenames)
 target_group = pygame.sprite.Group()
 x = 700
+count = 0
 for filename in target_filenames:
-    y = int(random.random() * 3 * (Height / 3))
+    count += 1
+    y = random.choice([LINE1, LINE2, LINE3])
+    if count in [3,5,7,9]:
+        x += 400
+    else:
+        x += 200
     target = NumTarget(filename, x, y)
-    x += int(300 + random.random() * 600)
     target_group.add(target)
 
-car = Car()
-stop_sign = StopSign(500, 85)
+# Stop Sign Sprite
+stop_sign_group = pygame.sprite.Group()
+x = 700
+for i in range(5):
+    stop_sign = stopSign(x,random.choice([LINE1, LINE2, LINE3]))
+    x += 600
+    stop_sign_group.add(stop_sign)
+
 background = Background()
 
+# Car Sprite
 car_sprite = pygame.sprite.Group()
 car = Car()
 
 all_sprites = pygame.sprite.Group()
-all_sprites.add(car)
-all_sprites.add(stop_sign)
-all_sprites.add(target_group)
+all_sprites.add(car, stop_sign_group, target_group)
+print(len(all_sprites))
+
 
 # Initializes the main loop of the game
 while Gameplay:
@@ -154,12 +172,12 @@ while Gameplay:
         if event.type == pygame.QUIT:
             Gameplay = False
 
-        if event.type == pygame.KEYUP or event.type == pygame.KEYDOWN:
+        if event.type in [pygame.KEYUP,pygame.KEYDOWN,pygame.K_RIGHT, pygame.K_LEFT]:
             car_sprite.update()
 
     # Update the background of the screen
-    background.updateBackground(dt)
-    background.renderBackground()
+    background.update_background(dt)
+    background.render_background()
     # Draw sprites
     all_sprites.update(dt)
     all_sprites.draw(screen)
