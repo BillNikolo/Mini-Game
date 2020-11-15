@@ -13,8 +13,14 @@ LINE3 = 315
 BACKGROUND_SPEED = 150
 CAR_VERT_SPEED = 180
 CAR_HORIZ_SPEED = 200
+STOP_SIGN_VIOLATION = 0
+SCORE = 0
 # Dimensions of the screen
 WIDTH, HEIGHT = 600, 400
+
+# Constant always true until we need to close/quit/exit the game
+GAMEPLAY = True
+
 
 
 class Background:
@@ -65,7 +71,7 @@ class Car(pygame.sprite.Sprite):
         if self.rect.bottom < 370:
             if pressed_keys[K_DOWN]:
                 self.rect.move_ip(0, int(CAR_VERT_SPEED*dt))
-        if self.rect.right < WIDTH:
+        if self.rect.right < (WIDTH - 10):
             if pressed_keys[K_RIGHT]:
                 self.rect.move_ip(int(CAR_HORIZ_SPEED*dt), 0)
         if self.rect.left > 10:
@@ -118,15 +124,14 @@ screen.fill(WHITE)
 pygame.display.set_caption("Racing Numbers")
 
 
-# Constant always true until we need to close/quit/exit the game
-Gameplay = True
-
 # Create a clock for the game
 clock = pygame.time.Clock()
 FPS = 60
 
 # Setting up Sprites
+
 # Target Sprite
+
 target_filenames = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png",
                     "8.png", "9.png"]
 random.shuffle(target_filenames)
@@ -136,34 +141,39 @@ count = 0
 for filename in target_filenames:
     count += 1
     y = random.choice([LINE1, LINE2, LINE3])
-    if count in [3,5,7,9]:
+    if count in [3, 5, 7, 9]:
         x += 400
     else:
         x += 200
     target = NumTarget(filename, x, y)
     target_group.add(target)
 
+
 # Stop Sign Sprite
+
 stop_sign_group = pygame.sprite.Group()
 x = 700
 for i in range(5):
-    stop_sign = StopSign(x,random.choice([LINE1, LINE2, LINE3]))
+    stop_sign = StopSign(x, random.choice([LINE1, LINE2, LINE3]))
     x += 600
     stop_sign_group.add(stop_sign)
 
 background = Background()
 
 # Car Sprite
+
 car_sprite = pygame.sprite.Group()
 car = Car()
 
 all_sprites = pygame.sprite.Group()
 all_sprites.add(car, stop_sign_group, target_group)
 print(len(all_sprites))
+print(len(stop_sign_group))
+print(len(target_group))
 
-
+collision_list = []
 # Initializes the main loop of the game
-while Gameplay:
+while GAMEPLAY:
     # The time running
     dt = clock.tick(FPS)/700
 
@@ -178,10 +188,25 @@ while Gameplay:
     # Update the background of the screen
     background.update_background(dt)
     background.render_background()
+
     # Draw sprites
     all_sprites.update(dt)
     all_sprites.draw(screen)
+
     # Update the whole screen
+
+    # Detects Collision
+    collision_list = pygame.sprite.spritecollide(car, stop_sign_group, True)
+    if len(collision_list) > 0:
+        if len(stop_sign_group) < 5:
+            STOP_SIGN_VIOLATION += 1
+            stop_sign = StopSign(collision_list[0].rect.x + 3000, random.choice([LINE1, LINE2, LINE3]))
+            stop_sign_group.add(stop_sign)
+            all_sprites.add(stop_sign)
+            collision_list.remove(collision_list[0])
+            if STOP_SIGN_VIOLATION == 3:
+                GAMEPLAY = False
+
     pygame.display.update()
 
 pygame.quit()
