@@ -39,8 +39,8 @@ class Background:
 
     def update_background(self, dt):
         # Update the coordination of the st/end point
-        self.backgroundX1 -= int(BACKGROUND_SPEED*dt)
-        self.backgroundX2 -= int(BACKGROUND_SPEED*dt)
+        self.backgroundX1 -= BACKGROUND_SPEED*dt
+        self.backgroundX2 -= BACKGROUND_SPEED*dt
         if self.backgroundX1 <= -self.BackgroundRect.width:
             self.backgroundX1 = self.BackgroundRect.width
         if self.backgroundX2 <= -self.BackgroundRect.width:
@@ -48,8 +48,8 @@ class Background:
 
     def render_background(self):
         # Draw the picture two times
-        screen.blit(self.background, (self.backgroundX1, self.backgroundY1))
-        screen.blit(self.background, (self.backgroundX2, self.backgroundY2))
+        screen.blit(self.background, (int(self.backgroundX1), int(self.backgroundY1)))
+        screen.blit(self.background, (int(self.backgroundX2), int(self.backgroundY2)))
 
 
 class Car(pygame.sprite.Sprite):
@@ -87,14 +87,17 @@ class StopSign(pygame.sprite.Sprite):
         # Create the main rectangular of the Stop Sign
         self.rect = self.image.get_rect()
         # First position of the Stop Sign
-        self.rect.center = (x, y)
+        self.x = x
+        self.y = y
 
+    def update(self, dt):        
+        self.x -= BACKGROUND_SPEED*dt
 
-    def update(self, dt):
-        self.rect.move_ip(int(-BACKGROUND_SPEED*dt), 0)
+        if self.x < -50:
+            self.x = 2950
+            self.y = random.choice([LINE1, LINE2, LINE3])
 
-        if self.rect.x < -50:
-            self.rect.center = (2950, random.choice([LINE1, LINE2, LINE3]))
+        self.rect.center = (int(self.x), int(self.y))
 
 
 class NumTarget(pygame.sprite.Sprite):
