@@ -11,8 +11,8 @@ LINE1 = 85
 LINE2 = 205
 LINE3 = 315
 BACKGROUND_SPEED = 150
-CAR_VERT_SPEED = 180
-CAR_HORIZ_SPEED = 200
+CAR_VERT_SPEED = BACKGROUND_SPEED + 30
+CAR_HORIZ_SPEED = BACKGROUND_SPEED + 50
 STOP_SIGN_VIOLATION = 0
 SCORE = 0
 # Dimensions of the screen
@@ -175,7 +175,7 @@ collision_list = []
 # Initializes the main loop of the game
 while GAMEPLAY:
     # The time running
-    dt = clock.tick(FPS)/700
+    dt = clock.tick(FPS)/1000
 
     for event in pygame.event.get():
         # Events are the inputs of the player
