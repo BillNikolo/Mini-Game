@@ -99,6 +99,11 @@ class StopSign(pygame.sprite.Sprite):
 
         self.rect.center = (int(self.x), int(self.y))
 
+    def collision(self):
+        self.x += 3000
+        self.y = random.choice([LINE1, LINE2, LINE3])
+
+
 
 class NumTarget(pygame.sprite.Sprite):
     def __init__(self, png, x, y):
@@ -121,8 +126,7 @@ class NumTarget(pygame.sprite.Sprite):
 # Initialize the game
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-# Fill screen with white
-screen.fill(WHITE)
+
 # Title of the screen
 pygame.display.set_caption("Racing Numbers")
 
@@ -185,8 +189,7 @@ while GAMEPLAY:
         if event.type == pygame.QUIT:
             Gameplay = False
 
-        if event.type in [pygame.KEYUP,pygame.KEYDOWN,pygame.K_RIGHT, pygame.K_LEFT]:
-            car_sprite.update()
+    car_sprite.update()
 
     # Update the background of the screen
     background.update_background(dt)
@@ -196,20 +199,14 @@ while GAMEPLAY:
     all_sprites.update(dt)
     all_sprites.draw(screen)
 
-    # Update the whole screen
-
+   
     # Detects Collision
-    collision_list = pygame.sprite.spritecollide(car, stop_sign_group, True)
-    if len(collision_list) > 0:
-        if len(stop_sign_group) < 5:
-            STOP_SIGN_VIOLATION += 1
-            stop_sign = StopSign(collision_list[0].rect.x + 3000, random.choice([LINE1, LINE2, LINE3]))
-            stop_sign_group.add(stop_sign)
-            all_sprites.add(stop_sign)
-            collision_list.remove(collision_list[0])
-            if STOP_SIGN_VIOLATION == 3:
-                GAMEPLAY = False
+    collision_list = pygame.sprite.spritecollide(car, stop_sign_group, False)
+    for stop_sign in collision_list:
+        STOP_SIGN_VIOLATION =+ 1
+        stop_sign.collision()
 
+    # Update the whole screen    
     pygame.display.update()
 
 pygame.quit()
