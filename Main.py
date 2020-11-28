@@ -53,7 +53,6 @@ class Background:
         SCREEN.blit(self.background, (int(self.backgroundX1), int(self.backgroundY1)))
         SCREEN.blit(self.background, (int(self.backgroundX2), int(self.backgroundY2)))
 
-
 class Scoreboard:
     def __init__(self, font, score, stop, mistake, boolean, color):
         self.sign1 = font.render(str("Score: "), boolean, color)
@@ -136,7 +135,7 @@ class NumTarget(pygame.sprite.Sprite):
         # First position of the Stop Sign
         self.x = x
         self.y = y
-        self.rect.center = (int(self.x),int(self.y))
+        self.rect.center = (int(self.x), int(self.y))
         
     def update(self, dt):
         self.x -= BACKGROUND_SPEED*dt
@@ -203,8 +202,6 @@ for i in range(5):
     stop_sign = StopSign(x, random.choice([LINE1, LINE2, LINE3]))
     x += 600
     stop_sign_group.add(stop_sign)
-
-
 
 # Car Sprite
 
