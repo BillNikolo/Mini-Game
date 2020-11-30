@@ -1,23 +1,25 @@
 import pygame
 from pygame.locals import *
 import random
+import time
 # import os
 # import pygame_assets as assets
 
 # Constants
 GRAY = (128, 128, 128)
 WHITE = (255, 255, 255)
+YELLOW = (255, 250, 205)
+BLUE = (100, 149, 237)
+RED = (255, 0, 0)
 LINE1 = 85
 LINE2 = 205
 LINE3 = 315
 BACKGROUND_SPEED = 150
 CAR_VERT_SPEED = BACKGROUND_SPEED + 30
 CAR_HORIZ_SPEED = BACKGROUND_SPEED + 50
-STOP_VIOLATION = 0
-NUMBER_VIOLATION = 0
 SCORE = 0
-check_list = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png",
-                    "8.png", "9.png"]
+LIVES = 5
+CHECK = 0
 # Dimensions of the screen
 WIDTH, HEIGHT = 600, 400
 
@@ -53,21 +55,57 @@ class Background:
         SCREEN.blit(self.background, (int(self.backgroundX1), int(self.backgroundY1)))
         SCREEN.blit(self.background, (int(self.backgroundX2), int(self.backgroundY2)))
 
-class Scoreboard:
-    def __init__(self, font, score, stop, mistake, boolean, color):
-        self.sign1 = font.render(str("Score: "), boolean, color)
-        SCREEN.blit(self.sign1, (75, 0))
-        self.sign2 = font.render(str("STOP: "), boolean, color)
-        SCREEN.blit(self.sign2, (230, 0))
-        self.sign3 = font.render(str("MISTAKES: "), boolean, color)
-        SCREEN.blit(self.sign3, (380, 0))
-        self.score_sign = font.render(str(score), boolean, color)
-        SCREEN.blit(self.score_sign, (160, 0))
-        self.stop_vio_sign = font.render(str(stop), boolean, color)
-        SCREEN.blit(self.stop_vio_sign, (310, 0))
-        self.num_vio_sign = font.render(str(mistake), boolean, color)
-        SCREEN.blit(self.num_vio_sign, (515, 0))
 
+class Scoreboard:
+    def __init__(self, score, lives, boolean, color):
+        self.score = score
+        self.lives = lives
+        self.font = pygame.font.SysFont("Verdana", 20)
+        self.boolean = boolean
+        self.color = color
+        self.sign1 = self.font.render(str("SCORE: "), self.boolean, self.color)
+        self.sign2 = self.font.render(str("LIVES: "), self.boolean, self.color)
+
+    def update_lives(self):
+        global GAMEPLAY
+        self.lives -= 1
+        self.score -= 50
+
+
+    def update_score(self):
+        global CHECK, GAMEPLAY
+        self.score += 100
+
+
+    def draw_scoreboard(self):
+        self.score_sign = self.font.render(str(self.score), self.boolean, self.color)
+        self.lives_sign = self.font.render(str(self.lives), self.boolean, self.color)
+        SCREEN.blit(self.sign1, (175, 0))
+        SCREEN.blit(self.sign2, (330, 0))
+        SCREEN.blit(self.score_sign, (260, 0))
+        SCREEN.blit(self.lives_sign, (410, 0))
+
+    def win_or_lose(self):
+        global CHECK, GAMEPLAY
+        self.wolfont = pygame.font.SysFont("Verdana", 50)
+        if CHECK == 9:
+            SCREEN.fill(YELLOW)
+            self.signw1 = self.wolfont.render(str("VICTORY!!"), True, BLUE)
+            self.signw2 = self.wolfont.render(str(self.score), True, BLUE)
+            SCREEN.blit(self.signw1, (240, 130))
+            SCREEN.blit(self.signw2, (250, 180))
+            pygame.display.update()
+            time.sleep(3)
+            GAMEPLAY = False
+        elif self.lives == 0:
+            SCREEN.fill(RED)
+            self.signl1 = self.wolfont.render(str("LOST"), True, YELLOW)
+            self.signl2 = self.wolfont.render(str(self.score), True, YELLOW)
+            SCREEN.blit(self.signl1, (240, 130))
+            SCREEN.blit(self.signl2, (240, 180))
+            pygame.display.update()
+            time.sleep(3)
+            GAMEPLAY = False
 
 
 class Car(pygame.sprite.Sprite):
@@ -96,6 +134,7 @@ class Car(pygame.sprite.Sprite):
             if pressed_keys[K_LEFT]:
                 self.rect.move_ip(int(-CAR_HORIZ_SPEED*dt), 0)
 
+
 class StopSign(pygame.sprite.Sprite):
     def __init__(self, x, y):
         # Call the Sprite Object in the def
@@ -122,19 +161,19 @@ class StopSign(pygame.sprite.Sprite):
         self.y = random.choice([LINE1, LINE2, LINE3])
 
 
-
 class NumTarget(pygame.sprite.Sprite):
-    def __init__(self, png, x, y):
+    def __init__(self, n, x, y):
         # Call the Sprite Object in the def
         super(NumTarget, self).__init__()
         # Load the image from the file
-        self.png = png
-        self.image = pygame.image.load(png)
+        self.png = str(n)+'.png'
+        self.image = pygame.image.load(self.png)
         # Create the main rectangular of the Number
         self.rect = self.image.get_rect()
         # First position of the Stop Sign
         self.x = x
         self.y = y
+        self.num = n
         self.rect.center = (int(self.x), int(self.y))
         
     def update(self, dt):
@@ -150,8 +189,8 @@ class NumTarget(pygame.sprite.Sprite):
         self.x += 3000
         self.y = random.choice([LINE1, LINE2, LINE3])
 
-    def png_return(self):
-        return self.png
+    def get_num(self):
+        return self.num
 
 # Initialize the game
 
@@ -164,7 +203,9 @@ SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Racing Numbers")
 
 # Initialize font of the gaming board
-FONT = pygame.font.SysFont("Verdana", 20)
+
+WIN_OR_LOSE_FONT = pygame.font.SysFont("Verdana", 50)
+
 
 background = Background()
 
@@ -176,21 +217,19 @@ FPS = 60
 
 # Target Sprite
 
-target_filenames = ["0.png", "1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png",
-                    "8.png", "9.png"]
-
-random.shuffle(target_filenames)
+target_file_number = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+random.shuffle(target_file_number)
 target_group = pygame.sprite.Group()
 x = 700
 count = 0
-for filename in target_filenames:
+for file_number in target_file_number:
     count += 1
     y = random.choice([LINE1, LINE2, LINE3])
     if count in [3, 5, 7, 9]:
         x += 400
     else:
         x += 200
-    target = NumTarget(filename, x, y)
+    target = NumTarget(file_number, x, y)
     target_group.add(target)
 
 
@@ -211,6 +250,8 @@ car = Car()
 all_sprites = pygame.sprite.Group()
 all_sprites.add(car, stop_sign_group, target_group)
 
+scoreboard = Scoreboard(SCORE, LIVES, True, WHITE)
+
 # Initializes the main loop of the game
 while GAMEPLAY:
     collision_stop = []
@@ -223,41 +264,33 @@ while GAMEPLAY:
         if event.type == pygame.QUIT:
             GAMEPLAY = False
 
-
     # Update the background of the screen
     background.update_background(dt)
     background.render_background()
 
-    Scoreboard(FONT, SCORE, STOP_VIOLATION, NUMBER_VIOLATION, True, WHITE)
+    scoreboard.draw_scoreboard()
 
     # Draw sprites
     all_sprites.update(dt)
     all_sprites.draw(SCREEN)
 
-
-     # Detects Collision
+    # Detects Collision
     collision_stop = pygame.sprite.spritecollide(car, stop_sign_group, False)
     for stop_sign in collision_stop:
-        STOP_VIOLATION += 1
-        print('SSV', STOP_VIOLATION)
         stop_sign.collision()
-        if STOP_VIOLATION == 3:
-            GAMEPLAY = False
+        scoreboard.update_lives()
 
     collision_num = pygame.sprite.spritecollide(car, target_group, False)
     for target in collision_num:
-        if check_list[SCORE] == target.png_return():
-            SCORE += 1
-            print('S', SCORE)
+        if target.get_num() == CHECK:
+            scoreboard.update_score()
+            CHECK += 1
         else:
-            NUMBER_VIOLATION += 1
-            print('NV', NUMBER_VIOLATION)
-            if NUMBER_VIOLATION == 3:
-                GAMEPLAY = False
+            scoreboard.update_lives()
 
         target.collision()
 
-
+    scoreboard.win_or_lose()
     # Update the whole screen
     pygame.display.update()
 
