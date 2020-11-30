@@ -17,9 +17,8 @@ LINE3 = 315
 BACKGROUND_SPEED = 150
 CAR_VERT_SPEED = BACKGROUND_SPEED + 30
 CAR_HORIZ_SPEED = BACKGROUND_SPEED + 50
-SCORE = 0
 LIVES = 5
-CHECK = 0
+
 # Dimensions of the screen
 WIDTH, HEIGHT = 600, 400
 
@@ -57,8 +56,9 @@ class Background:
 
 
 class Scoreboard:
-    def __init__(self, score, lives, boolean, color):
-        self.score = score
+    def __init__(self, lives, boolean, color):
+        self.expected_target_num = 0
+        self.score = 0
         self.lives = lives
         self.font = pygame.font.SysFont("Verdana", 20)
         self.boolean = boolean
@@ -66,15 +66,17 @@ class Scoreboard:
         self.sign1 = self.font.render(str("SCORE: "), self.boolean, self.color)
         self.sign2 = self.font.render(str("LIVES: "), self.boolean, self.color)
 
-    def update_lives(self):
-        global GAMEPLAY
+    def handle_stop_sign_collision(self):
         self.lives -= 1
         self.score -= 50
 
-    def update_score(self):
-        global CHECK, GAMEPLAY
-        self.score += 100
-
+    def handle_target_collision(self, target):
+        if target.get_num() == self.expected_target_num:
+            self.score += 100
+            self.expected_target_num += 1
+        else:
+            self.handle_stop_sign_collision()
+            
     def draw_scoreboard(self):
         self.score_sign = self.font.render(str(self.score), self.boolean, self.color)
         self.lives_sign = self.font.render(str(self.lives), self.boolean, self.color)
@@ -82,29 +84,27 @@ class Scoreboard:
         SCREEN.blit(self.sign2, (330, 0))
         SCREEN.blit(self.score_sign, (260, 0))
         SCREEN.blit(self.lives_sign, (410, 0))
-
-    def win_or_lose(self):
-        global CHECK, GAMEPLAY
         self.wolfont = pygame.font.SysFont("Verdana", 50)
-        if CHECK == 10:
+        if self.expected_target_num == 10:
             SCREEN.fill(YELLOW)
             self.signw1 = self.wolfont.render(str("VICTORY!!"), True, BLUE)
             self.signw2 = self.wolfont.render(str(self.score), True, BLUE)
             SCREEN.blit(self.signw1, (240, 130))
             SCREEN.blit(self.signw2, (250, 180))
-            pygame.display.update()
-            time.sleep(5)
-            GAMEPLAY = False
         elif self.lives == 0:
             SCREEN.fill(RED)
             self.signl1 = self.wolfont.render(str("LOST"), True, YELLOW)
             self.signl2 = self.wolfont.render(str(self.score), True, YELLOW)
             SCREEN.blit(self.signl1, (210, 130))
             SCREEN.blit(self.signl2, (240, 180))
-            pygame.display.update()
-            time.sleep(5)
-            GAMEPLAY = False
 
+    def game_is_ongoing(self):
+        if self.lives == 0:
+            return False
+        if self.expected_target_num == 10:
+            return False
+        return True
+    
 
 class Car(pygame.sprite.Sprite):
     def __init__(self):
@@ -114,6 +114,9 @@ class Car(pygame.sprite.Sprite):
         self.image = pygame.image.load("Car.png")
         # Create the main rectangular of the Car
         self.rect = self.image.get_rect()
+        self.reset()
+        
+    def reset(self):
         # First position of the Car
         self.rect.center = (50, 85)
 
@@ -201,7 +204,7 @@ SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Racing Numbers")
 
 background = Background()
-scoreboard = Scoreboard(SCORE, LIVES, True, WHITE)
+scoreboard = Scoreboard(LIVES, True, WHITE)
 
 # Create a clock for the game
 clock = pygame.time.Clock()
@@ -254,33 +257,33 @@ while GAMEPLAY:
         if event.type == pygame.QUIT:
             GAMEPLAY = False
 
-    # Update the background of the screen
-    background.update_background(dt)
-    background.render_background()
+    if scoreboard.game_is_ongoing():
+        # Update the background of the screen
+        background.update_background(dt)
+        background.render_background() 
+
+        # Draw sprites
+        all_sprites.update(dt)
+        all_sprites.draw(SCREEN)
+
+        # Detects Collision
+        collision_stop = pygame.sprite.spritecollide(car, stop_sign_group, False)
+        for stop_sign in collision_stop:
+            stop_sign.collision()
+            scoreboard.handle_stop_sign_collision()
+
+        collision_num = pygame.sprite.spritecollide(car, target_group, False)
+        for target in collision_num:
+            scoreboard.handle_target_collision(target)
+            target.collision()
+    else:
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            # Restart game
+            scoreboard = Scoreboard(LIVES, True, WHITE)
+            car.reset()
 
     scoreboard.draw_scoreboard()
-
-    # Draw sprites
-    all_sprites.update(dt)
-    all_sprites.draw(SCREEN)
-
-    # Detects Collision
-    collision_stop = pygame.sprite.spritecollide(car, stop_sign_group, False)
-    for stop_sign in collision_stop:
-        stop_sign.collision()
-        scoreboard.update_lives()
-
-    collision_num = pygame.sprite.spritecollide(car, target_group, False)
-    for target in collision_num:
-        if target.get_num() == CHECK:
-            scoreboard.update_score()
-            CHECK += 1
-        else:
-            scoreboard.update_lives()
-
-        target.collision()
-
-    scoreboard.win_or_lose()
+    
     # Update the whole screen
     pygame.display.update()
 
