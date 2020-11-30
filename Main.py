@@ -71,11 +71,9 @@ class Scoreboard:
         self.lives -= 1
         self.score -= 50
 
-
     def update_score(self):
         global CHECK, GAMEPLAY
         self.score += 100
-
 
     def draw_scoreboard(self):
         self.score_sign = self.font.render(str(self.score), self.boolean, self.color)
@@ -88,23 +86,23 @@ class Scoreboard:
     def win_or_lose(self):
         global CHECK, GAMEPLAY
         self.wolfont = pygame.font.SysFont("Verdana", 50)
-        if CHECK == 9:
+        if CHECK == 10:
             SCREEN.fill(YELLOW)
             self.signw1 = self.wolfont.render(str("VICTORY!!"), True, BLUE)
             self.signw2 = self.wolfont.render(str(self.score), True, BLUE)
             SCREEN.blit(self.signw1, (240, 130))
             SCREEN.blit(self.signw2, (250, 180))
             pygame.display.update()
-            time.sleep(3)
+            time.sleep(5)
             GAMEPLAY = False
         elif self.lives == 0:
             SCREEN.fill(RED)
             self.signl1 = self.wolfont.render(str("LOST"), True, YELLOW)
             self.signl2 = self.wolfont.render(str(self.score), True, YELLOW)
-            SCREEN.blit(self.signl1, (240, 130))
+            SCREEN.blit(self.signl1, (210, 130))
             SCREEN.blit(self.signl2, (240, 180))
             pygame.display.update()
-            time.sleep(3)
+            time.sleep(5)
             GAMEPLAY = False
 
 
@@ -202,12 +200,8 @@ SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 # Title of the screen
 pygame.display.set_caption("Racing Numbers")
 
-# Initialize font of the gaming board
-
-WIN_OR_LOSE_FONT = pygame.font.SysFont("Verdana", 50)
-
-
 background = Background()
+scoreboard = Scoreboard(SCORE, LIVES, True, WHITE)
 
 # Create a clock for the game
 clock = pygame.time.Clock()
@@ -234,7 +228,6 @@ for file_number in target_file_number:
 
 
 # Stop Sign Sprite
-
 stop_sign_group = pygame.sprite.Group()
 x = 700
 for i in range(5):
@@ -243,14 +236,11 @@ for i in range(5):
     stop_sign_group.add(stop_sign)
 
 # Car Sprite
-
 car_sprite = pygame.sprite.Group()
 car = Car()
 
 all_sprites = pygame.sprite.Group()
 all_sprites.add(car, stop_sign_group, target_group)
-
-scoreboard = Scoreboard(SCORE, LIVES, True, WHITE)
 
 # Initializes the main loop of the game
 while GAMEPLAY:
