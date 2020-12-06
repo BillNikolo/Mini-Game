@@ -303,6 +303,8 @@ while GAME:
                 if event.type == pygame.QUIT:
                     GAME = False
                     GAMEPLAY = False
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    GAMEPLAY = False
 
             if scoreboard.game_is_ongoing():
                 collision_stop = []
