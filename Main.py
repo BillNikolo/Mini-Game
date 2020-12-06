@@ -23,7 +23,8 @@ LIVES = 5
 WIDTH, HEIGHT = 600, 400
 
 # Constant always true until we need to close/quit/exit the game
-GAMEPLAY = True
+GAME = True
+GAMEPLAY = False
 
 
 class Background:
@@ -53,6 +54,49 @@ class Background:
         # Draw the picture two times
         SCREEN.blit(self.background, (int(self.backgroundX1), int(self.backgroundY1)))
         SCREEN.blit(self.background, (int(self.backgroundX2), int(self.backgroundY2)))
+
+
+class Game_Menu(Background):
+    def __init__(self):
+        super(Game_Menu,self).__init__()
+        self.subline1 = (70, 175)
+        self.subline2 = (70,285)
+        self.position = self.subline1
+        self.logo = pygame.image.load('Menu_logo.png')
+        self.font = pygame.font.SysFont("Verdana", 50)
+        self.sign1 = self.font.render(str("NEW GAME"), True, YELLOW)
+        self.sign2 = self.font.render(str("QUIT"), True, RED)
+
+    def update(self):
+        global GAME, GAMEPLAY
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                GAME = False
+            self.mouse_pos_any_time = pygame.mouse.get_pos()
+            if self.mouse_pos_any_time[0] > 150 and self.mouse_pos_any_time[0] < 430 and self.mouse_pos_any_time[1] > 180 and self.mouse_pos_any_time[1] < 220:
+                self.position = self.subline1
+                if event.type ==pygame.MOUSEBUTTONDOWN:
+                    GAMEPLAY = True
+            elif self.mouse_pos_any_time[0] > 220 and self.mouse_pos_any_time[0] < 350 and self.mouse_pos_any_time[1] > 290 and self.mouse_pos_any_time[1] < 330:
+                self.position = self.subline2
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    GAME = False
+            if event.type == pygame.KEYDOWN and (event.key == pygame.K_UP or event.key == pygame.K_DOWN):
+                if self.position == self.subline1:
+                    self.position = self.subline2
+                else:
+                    self.position = self.subline1
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                if self.position == self.subline1:
+                    GAMEPLAY = True
+                else:
+                    GAME = False
+
+    def draw(self):
+        SCREEN.blit(self.background,(0,0))
+        SCREEN.blit(self.logo, self.position)
+        SCREEN.blit(self.sign1, (150, 170))
+        SCREEN.blit(self.sign2, (230, 280))
 
 
 class Scoreboard:
@@ -89,14 +133,14 @@ class Scoreboard:
             SCREEN.fill(YELLOW)
             self.signw1 = self.wolfont.render(str("VICTORY!!"), True, BLUE)
             self.signw2 = self.wolfont.render(str(self.score), True, BLUE)
-            SCREEN.blit(self.signw1, (240, 130))
+            SCREEN.blit(self.signw1, (190, 130))
             SCREEN.blit(self.signw2, (250, 180))
         elif self.lives == 0:
             SCREEN.fill(RED)
             self.signl1 = self.wolfont.render(str("LOST"), True, YELLOW)
             self.signl2 = self.wolfont.render(str(self.score), True, YELLOW)
-            SCREEN.blit(self.signl1, (210, 130))
-            SCREEN.blit(self.signl2, (240, 180))
+            SCREEN.blit(self.signl1, (220, 130))
+            SCREEN.blit(self.signl2, (220, 180))
 
     def game_is_ongoing(self):
         if self.lives == 0:
@@ -202,89 +246,92 @@ SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 
 # Title of the screen
 pygame.display.set_caption("Racing Numbers")
-
-background = Background()
-scoreboard = Scoreboard(LIVES, True, WHITE)
-
-# Create a clock for the game
 clock = pygame.time.Clock()
 FPS = 60
+game_menu = Game_Menu()
 
-# Setting up Sprites
-
-# Target Sprite
-
-target_file_number = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-random.shuffle(target_file_number)
-target_group = pygame.sprite.Group()
-x = 700
-count = 0
-for file_number in target_file_number:
-    count += 1
-    y = random.choice([LINE1, LINE2, LINE3])
-    if count in [3, 5, 7, 9]:
-        x += 400
-    else:
-        x += 200
-    target = NumTarget(file_number, x, y)
-    target_group.add(target)
-
-
-# Stop Sign Sprite
-stop_sign_group = pygame.sprite.Group()
-x = 700
-for i in range(5):
-    stop_sign = StopSign(x, random.choice([LINE1, LINE2, LINE3]))
-    x += 600
-    stop_sign_group.add(stop_sign)
-
-# Car Sprite
-car_sprite = pygame.sprite.Group()
-car = Car()
-
-all_sprites = pygame.sprite.Group()
-all_sprites.add(car, stop_sign_group, target_group)
-
-# Initializes the main loop of the game
-while GAMEPLAY:
-    collision_stop = []
-    collision_num = []
-    # The time running
-    dt = clock.tick(FPS)/1000
-
-    for event in pygame.event.get():
-        # Events are the inputs of the player
-        if event.type == pygame.QUIT:
-            GAMEPLAY = False
-
-    if scoreboard.game_is_ongoing():
-        # Update the background of the screen
-        background.update_background(dt)
-        background.render_background() 
-
-        # Draw sprites
-        all_sprites.update(dt)
-        all_sprites.draw(SCREEN)
-
-        # Detects Collision
-        collision_stop = pygame.sprite.spritecollide(car, stop_sign_group, False)
-        for stop_sign in collision_stop:
-            stop_sign.collision()
-            scoreboard.handle_stop_sign_collision()
-
-        collision_num = pygame.sprite.spritecollide(car, target_group, False)
-        for target in collision_num:
-            scoreboard.handle_target_collision(target)
-            target.collision()
-    else:
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            # Restart game
-            scoreboard = Scoreboard(LIVES, True, WHITE)
-            car.reset()
-
-    scoreboard.draw_scoreboard()
-    
-    # Update the whole screen
+while GAME:
+    clock.tick(FPS)
+    game_menu.draw()
+    game_menu.update()
     pygame.display.update()
+
+    if GAMEPLAY == True:
+        background = Background()
+        scoreboard = Scoreboard(LIVES, True, WHITE)
+
+        # Target Sprite
+
+        target_file_number = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        random.shuffle(target_file_number)
+        target_group = pygame.sprite.Group()
+        x = 700
+        count = 0
+        for file_number in target_file_number:
+            count += 1
+            y = random.choice([LINE1, LINE2, LINE3])
+            if count in [3, 5, 7, 9]:
+                x += 400
+            else:
+                x += 200
+            target = NumTarget(file_number, x, y)
+            target_group.add(target)
+
+
+        # Stop Sign Sprite
+        stop_sign_group = pygame.sprite.Group()
+        x = 700
+        for i in range(5):
+            stop_sign = StopSign(x, random.choice([LINE1, LINE2, LINE3]))
+            x += 600
+            stop_sign_group.add(stop_sign)
+
+        # Car Sprite
+        car_sprite = pygame.sprite.Group()
+        car = Car()
+
+        all_sprites = pygame.sprite.Group()
+        all_sprites.add(car, stop_sign_group, target_group)
+
+        # Initializes the main loop of the game
+        while GAMEPLAY:
+            # The time running
+            dt = clock.tick(FPS)/1000
+
+            for event in pygame.event.get():
+                # Events are the inputs of the player
+                if event.type == pygame.QUIT:
+                    GAME = False
+                    GAMEPLAY = False
+
+            if scoreboard.game_is_ongoing():
+                collision_stop = []
+                collision_num = []
+                # Update the background of the screen
+                background.update_background(dt)
+                background.render_background()
+
+                # Draw sprites
+                all_sprites.update(dt)
+                all_sprites.draw(SCREEN)
+
+                # Detects Collision
+                collision_stop = pygame.sprite.spritecollide(car, stop_sign_group, False)
+                for stop_sign in collision_stop:
+                    stop_sign.collision()
+                    scoreboard.handle_stop_sign_collision()
+
+                collision_num = pygame.sprite.spritecollide(car, target_group, False)
+                for target in collision_num:
+                    scoreboard.handle_target_collision(target)
+                    target.collision()
+            else:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    GAMEPLAY = False
+
+            scoreboard.draw_scoreboard()
+
+            # Update the whole screen
+            pygame.display.update()
 
 pygame.quit()
