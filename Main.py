@@ -1,9 +1,6 @@
 import pygame
 from pygame.locals import *
 import random
-import time
-# import os
-# import pygame_assets as assets
 
 # Constants
 GRAY = (128, 128, 128)
@@ -14,9 +11,9 @@ RED = (255, 0, 0)
 LINE1 = 85
 LINE2 = 205
 LINE3 = 315
-BACKGROUND_SPEED = 150
-CAR_VERT_SPEED = BACKGROUND_SPEED + 30
-CAR_HORIZ_SPEED = BACKGROUND_SPEED + 50
+BACKGROUND_SPEED = 200
+CAR_VERT_SPEED = BACKGROUND_SPEED + 80
+#CAR_HORIZ_SPEED = BACKGROUND_SPEED + 50
 LIVES = 5
 
 # Dimensions of the screen
@@ -172,12 +169,12 @@ class Car(pygame.sprite.Sprite):
         if self.rect.bottom < 370:
             if pressed_keys[K_DOWN]:
                 self.rect.move_ip(0, int(CAR_VERT_SPEED*dt))
-        if self.rect.right < (WIDTH - 10):
-            if pressed_keys[K_RIGHT]:
-                self.rect.move_ip(int(CAR_HORIZ_SPEED*dt), 0)
-        if self.rect.left > 10:
-            if pressed_keys[K_LEFT]:
-                self.rect.move_ip(int(-CAR_HORIZ_SPEED*dt), 0)
+        # if self.rect.right < (WIDTH - 10):
+        #    if pressed_keys[K_RIGHT]:
+        #        self.rect.move_ip(int(CAR_HORIZ_SPEED*dt), 0)
+        # if self.rect.left > 10:
+        #   if pressed_keys[K_LEFT]:
+        #        self.rect.move_ip(int(-CAR_HORIZ_SPEED*dt), 0)
 
 
 class StopSign(pygame.sprite.Sprite):
@@ -247,7 +244,7 @@ SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
 # Title of the screen
 pygame.display.set_caption("Racing Numbers")
 clock = pygame.time.Clock()
-FPS = 60
+FPS = 120
 game_menu = Game_Menu()
 
 while GAME:
